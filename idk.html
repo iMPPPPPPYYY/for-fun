@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Color Invert Squares</title>
+    <style>
+        body {
+            background-color: black;
+            margin: 0;
+            overflow: hidden;
+            height: 100vh;
+            transition: background-color 0.1s;
+            image-rendering: pixelated;
+        }
+        
+        /* 反转区域 */
+        .invert-area {
+            position: fixed;
+            background: white;
+            opacity: 1;
+            mix-blend-mode: difference;
+            filter: blur(0.8px) contrast(1.3);
+            image-rendering: pixelated;
+        }
+        
+        /* 方块内部噪点 */
+        .square-noise {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: black;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+<script>
+    // 创建颜色反转方块
+    function createInvertSquare() {
+        const count = Math.floor(Math.random() * 2) + 1; // 1-2个方块
+        let firstSquarePos = null;
+        
+        for (let i = 0; i < count; i++) {
+            setTimeout(() => {
+                const square = document.createElement('div');
+                square.className = 'invert-area';
+                
+                // 随机大小：小的80-150px，大的200-300px
+                const isBig = Math.random() > 0.5;
+                const size = isBig ? 
+                    Math.random() * 100 + 200 : // 200-300px
+                    Math.random() * 70 + 80;    // 80-150px
+                
+                square.style.width = size + 'px';
+                square.style.height = size + 'px';
+                
+                // 随机位置 - 如果是第二个方块且有60%概率与第一个重合
+                let left, top;
+                if (i === 1 && firstSquarePos && Math.random() < 0.6) {
+                    // 与第一个方块部分重合
+                    const offset = size * 0.3;
+                    left = firstSquarePos.left + (Math.random() * offset - offset/2);
+                    top = firstSquarePos.top + (Math.random() * offset - offset/2);
+                    // 确保不超出屏幕
+                    left = Math.max(0, Math.min(left, window.innerWidth - size));
+                    top = Math.max(0, Math.min(top, window.innerHeight - size));
+                } else {
+                    left = Math.random() * (window.innerWidth - size);
+                    top = Math.random() * (window.innerHeight - size);
+                    if (i === 0) firstSquarePos = { left, top, size };
+                }
+                
+                square.style.left = left + 'px';
+                square.style.top = top + 'px';
+                
+                document.body.appendChild(square);
+                
+                // 添加方块内部噪点
+                addSquareNoise(square, size);
+                
+                console.log(`创建了颜色反转方块 ${isBig ? '大' : '小'}，大小: ${Math.round(size)}px`);
+                
+                // 显示0.8-1.2秒后消失
+                const duration = Math.random() * 400 + 800;
+                setTimeout(() => {
+                    if (square.parentNode) {
+                        square.remove();
+                    }
+                }, duration);
+                
+            }, i * 80); // 第二个方块延迟80ms出现
+        }
+    }
+    
+    // 添加方块内部噪点
+    function addSquareNoise(square, size) {
+        const noiseCount = Math.floor(size * 0.1); // 根据方块大小决定噪点数量
+        
+        for (let j = 0; j < noiseCount; j++) {
+            const noise = document.createElement('div');
+            noise.className = 'square-noise';
+            
+            // 在方块内部随机位置
+            noise.style.left = Math.random() * 100 + '%';
+            noise.style.top = Math.random() * 100 + '%';
+            
+            // 随机大小和透明度
+            const noiseSize = Math.random() * 2 + 1;
+            noise.style.width = noiseSize + 'px';
+            noise.style.height = noiseSize + 'px';
+            noise.style.opacity = Math.random() * 0.7 + 0.3;
+            
+            square.appendChild(noise);
+        }
+    }
+    
+    // 立即创建一组测试方块
+    setTimeout(() => {
+        createInvertSquare();
+    }, 300);
+    
+    // 每1.2-2秒创建一组新方块
+    setInterval(() => {
+        createInvertSquare();
+    }, Math.random() * 800 + 1200);
+    
+    // 点击屏幕也可以创建方块
+    document.addEventListener('click', function() {
+        createInvertSquare();
+    });
+
+    // 提示信息
+    console.log('页面已加载，等待方块出现...');
+</script>
+
+</body>
+</html>
